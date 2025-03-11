@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Driver - F1 Management App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <style>
+    :root {
+      --primary: #e10600;
+      --secondary: #1e1e1e;
+      --light: #f8f9fa;
+      --dark: #15151e;
+      --success: #27ae60;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --info: #3498db;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
+    
+    body {
+      background-color: var(--light);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+    
+    /* Header/Navigation */
+    header {
+      background-color: var(--dark);
+      color: white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo i {
+      color: var(--primary);
+      font-size: 24px;
+      margin-right: 10px;
+    }
+    
+    .logo h1 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-links a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav-links a.active {
+      color: white;
+      background-color: var(--primary);
+    }
+    
+    .auth-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .user-status {
+      font-size: 14px;
+    }
+    
+    .btn {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #c10000;
+    }
+    
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+    }
+    
+    .btn-outline:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    /* Main Content */
+    .main-content {
+      padding: 30px 0;
+    }
+    
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+    
+    .page-title {
+      margin-bottom: 20px;
+      font-weight: 700;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .page-title i {
+      color: var(--primary);
+    }
+    
+    /* Form Styles */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: var(--secondary);
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(225, 6, 0, 0.2);
+    }
+    
+    .form-control.invalid {
+      border-color: var(--danger);
+    }
+    
+    .form-full-width {
+      grid-column: 1 / -1;
+    }
+    
+    /* Alert Messages */
+    .alert {
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .alert i {
+      font-size: 18px;
+    }
+    
+    .alert-danger {
+      background-color: rgba(231, 76, 60, 0.1);
+      border-left: 4px solid var(--danger);
+      color: var(--danger);
+    }
+    
+    .alert-success {
+      background-color: rgba(39, 174, 96, 0.1);
+      border-left: 4px solid var(--success);
+      color: var(--success);
+    }
+    
+    .alert-warning {
+      background-color: rgba(243, 156, 18, 0.1);
+      border-left: 4px solid var(--warning);
+      color: var(--warning);
+    }
+    
+    /* Authentication notice */
+    .auth-notice {
+      text-align: center;
+      padding: 30px;
+    }
+    
+    .auth-notice i {
+      font-size: 50px;
+      color: var(--warning);
+      margin-bottom: 15px;
+    }
+    
+    .auth-notice h3 {
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+    
+    .auth-notice a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .auth-notice a:hover {
+      text-decoration: underline;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .nav-links {
+        margin: 15px 0;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+      }
+      
+      .auth-container {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="navbar">
+        <div class="logo">
+          <i class="fas fa-flag-checkered"></i>
+          <h1>F1 Management</h1>
+        </div>
+        <div class="nav-links">
+          <a href="index.html"><i class="fas fa-home"></i> Home</a>
+          <a href="query-drivers.html"><i class="fas fa-user-circle"></i> Drivers</a>
+          <a href="query-teams.html"><i class="fas fa-users"></i> Teams</a>
+          <a href="compare-drivers.html"><i class="fas fa-balance-scale"></i> Compare Drivers</a>
+          <a href="compare-teams.html"><i class="fas fa-building"></i> Compare Teams</a>
+          <a href="add-driver.html" class="active auth-required"><i class="fas fa-user-plus"></i> Add Driver</a>
+          <a href="add-team.html" class="auth-required"><i class="fas fa-folder-plus"></i> Add Team</a>
+        </div>
+        <div class="auth-container">
+          <span class="user-status" id="login-status">Not logged in</span>
+          <a href="login.html" id="login-link" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Login</a>
+          <button id="logout-btn" class="btn btn-outline"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <div class="container auth-required">
+      <h2 class="page-title"><i class="fas fa-user-plus"></i> Add New Driver</h2>
+      
+      <div class="alert alert-danger" id="error-message" style="display: none;">
+        <i class="fas fa-exclamation-circle"></i>
+        <span></span>
+      </div>
+      
+      <div class="alert alert-success" id="success-message" style="display: none;">
+        <i class="fas fa-check-circle"></i>
+        <span></span>
+      </div>
+      
+      <div class="card">
+        <form id="add-driver-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="name">Driver Name</label>
+              <input type="text" id="name" class="form-control" required placeholder="e.g. Lewis Hamilton">
+            </div>
+            
+            <div class="form-group">
+              <label for="age">Age</label>
+              <input type="number" id="age" class="form-control" required min="16" max="60" placeholder="e.g. 37">
+            </div>
+            
+            <div class="form-group">
+              <label for="team">Current Team</label>
+              <select id="team" class="form-control" required>
+                <option value="">Select a team</option>
+                <!-- Teams will be populated here -->
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="total_points_scored">Total Points Scored</label>
+              <input type="number" id="total_points_scored" class="form-control" required min="0" placeholder="e.g. 4405.5">
+            </div>
+            
+            <div class="form-group">
+              <label for="total_race_wins">Total Race Wins</label>
+              <input type="number" id="total_race_wins" class="form-control" required min="0" placeholder="e.g. 103">
+            </div>
+            
+            <div class="form-group">
+              <label for="total_pole_positions">Total Pole Positions</label>
+              <input type="number" id="total_pole_positions" class="form-control" required min="0" placeholder="e.g. 103">
+            </div>
+            
+            <div class="form-group">
+              <label for="total_fastest_laps">Total Fastest Laps</label>
+              <input type="number" id="total_fastest_laps" class="form-control" required min="0" placeholder="e.g. 59">
+            </div>
+            
+            <div class="form-group">
+              <label for="total_world_titles">Total World Championships</label>
+              <input type="number" id="total_world_titles" class="form-control" required min="0" placeholder="e.g. 7">
+            </div>
+            
+            <div class="form-group form-full-width">
+              <div class="btn-group">
+                <button type="button" class="btn btn-outline" onclick="window.location.href='query-drivers.html'">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Driver</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div class="container" id="not-logged-in" style="display: none;">
+      <div class="card auth-notice">
+        <i class="fas fa-lock"></i>
+        <h3>Authentication Required</h3>
+        <p>You must be logged in to add a new driver to the system.</p>
+        <p><a href="login.html" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Login Now</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-login.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Load teams for dropdown
+      try {
+        const teams = await TeamsAPI.getAll();
+        const teamSelect = document.getElementById('team');
+        
+        // Clear any existing options except the first one
+        while (teamSelect.options.length > 1) {
+          teamSelect.options.remove(1);
+        }
+        
+        // Add teams to the dropdown
+        teams.forEach(team => {
+          const option = document.createElement('option');
+          option.value = team.name;
+          option.textContent = team.name;
+          teamSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading teams:', error);
+        const errorEl = document.getElementById('error-message');
+        errorEl.querySelector('span').textContent = 'Error loading teams. Please try again.';
+        errorEl.style.display = 'block';
+      }
+      
+      // Form submit handler
+      const form = document.getElementById('add-driver-form');
+      
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        try {
+          const driverData = {
+            name: document.getElementById('name').value,
+            age: parseInt(document.getElementById('age').value),
+            team: document.getElementById('team').value,
+            total_pole_positions: parseInt(document.getElementById('total_pole_positions').value),
+            total_race_wins: parseInt(document.getElementById('total_race_wins').value),
+            total_points_scored: parseInt(document.getElementById('total_points_scored').value),
+            total_world_titles: parseInt(document.getElementById('total_world_titles').value),
+            total_fastest_laps: parseInt(document.getElementById('total_fastest_laps').value)
+          };
+          
+          await DriversAPI.create(driverData);
+          
+          const successEl = document.getElementById('success-message');
+          successEl.querySelector('span').textContent = 'Driver added successfully!';
+          successEl.style.display = 'block';
+          document.getElementById('error-message').style.display = 'none';
+          
+          // Reset form
+          form.reset();
+          
+          // Redirect after a short delay
+          setTimeout(() => {
+            window.location.href = 'query-drivers.html';
+          }, 2000);
+          
+        } catch (error) {
+          console.error('Error adding driver:', error);
+          const errorEl = document.getElementById('error-message');
+          errorEl.querySelector('span').textContent = `Error: ${error.message || 'Failed to add driver'}`;
+          errorEl.style.display = 'block';
+          document.getElementById('success-message').style.display = 'none';
+        }
+      });
+      
+      // Show/hide logout button based on auth state
+      const logoutBtn = document.getElementById('logout-btn');
+      const loginLink = document.getElementById('login-link');
+      
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          document.getElementById('login-status').textContent = `Hello, ${user.email}`;
+          logoutBtn.style.display = 'inline-block';
+          loginLink.style.display = 'none';
+          document.getElementById('not-logged-in').style.display = 'none';
+          document.querySelectorAll('.auth-required').forEach(el => {
+            el.style.display = 'block';
+          });
+        } else {
+          document.getElementById('login-status').textContent = 'Not logged in';
+          logoutBtn.style.display = 'none';
+          loginLink.style.display = 'inline-block';
+          document.getElementById('not-logged-in').style.display = 'block';
+          document.querySelectorAll('.auth-required').forEach(el => {
+            el.style.display = 'none';
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

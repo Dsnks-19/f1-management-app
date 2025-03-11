@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>F1 Management App</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Firebase scripts -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <h1>F1 Management</h1>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="query-drivers.html">Query Drivers</a>
+        <a href="query-teams.html">Query Teams</a>
+        <a href="compare-drivers.html">Compare Drivers</a>
+        <a href="compare-teams.html">Compare Teams</a>
+        <a href="add-driver.html" class="auth-required">Add Driver</a>
+        <a href="add-team.html" class="auth-required">Add Team</a>
+        <a href="login.html" id="login-link">Login</a>
+      </div>
+      <div class="auth-container">
+        <span id="login-status">Not logged in</span>
+        <button id="logout-btn">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2>Welcome to the F1 Management App</h2>
+    <p>This application allows you to manage Formula 1 drivers and teams data.</p>
+    
+    <div class="row mt-20">
+      <div class="col">
+        <h3>Recent Drivers</h3>
+        <table id="drivers-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Team</th>
+              <th>World Titles</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Drivers will be populated here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row mt-20">
+      <div class="col">
+        <h3>Recent Teams</h3>
+        <table id="teams-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Year Founded</th>
+              <th>Constructor Titles</th>
+              <th>Previous Season Position</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Teams will be populated here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-login.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Load drivers
+        const drivers = await DriversAPI.getAll();
+        const driversTable = document.getElementById('drivers-table').getElementsByTagName('tbody')[0];
+        
+        driversTable.innerHTML = '';
+        
+        if (drivers.length === 0) {
+          const row = driversTable.insertRow();
+          const cell = row.insertCell(0);
+          cell.colSpan = 4;
+          cell.textContent = 'No drivers found';
+        } else {
+          drivers.forEach(driver => {
+            const row = driversTable.insertRow();
+            
+            const nameCell = row.insertCell(0);
+            const nameLink = document.createElement('a');
+            nameLink.href = `driver-details.html?id=${driver.id}`;
+            nameLink.textContent = driver.name;
+            nameCell.appendChild(nameLink);
+            
+            row.insertCell(1).textContent = driver.age;
+            row.insertCell(2).textContent = driver.team;
+            row.insertCell(3).textContent = driver.total_world_titles;
+          });
+        }
+        
+        // Load teams
+        const teams = await TeamsAPI.getAll();
+        const teamsTable = document.getElementById('teams-table').getElementsByTagName('tbody')[0];
+        
+        teamsTable.innerHTML = '';
+        
+        if (teams.length === 0) {
+          const row = teamsTable.insertRow();
+          const cell = row.insertCell(0);
+          cell.colSpan = 4;
+          cell.textContent = 'No teams found';
+        } else {
+          teams.forEach(team => {
+            const row = teamsTable.insertRow();
+            
+            const nameCell = row.insertCell(0);
+            const nameLink = document.createElement('a');
+            nameLink.href = `team-details.html?id=${team.id}`;
+            nameLink.textContent = team.name;
+            nameCell.appendChild(nameLink);
+            
+            row.insertCell(1).textContent = team.year_founded;
+            row.insertCell(2).textContent = team.total_constructor_titles;
+            row.insertCell(3).textContent = team.finishing_position_previous_season;
+          });
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    });
+  </script>
+</body>
+</html>
